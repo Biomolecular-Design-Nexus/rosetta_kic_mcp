@@ -1,0 +1,55 @@
+{
+  "test_date": "2025-12-31T15:30:37.100990",
+  "server_name": "rosetta-kic-mcp",
+  "server_path": "src/server.py",
+  "tests": {
+    "Server Startup": {
+      "status": "failed",
+      "output": "",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'src'\n"
+    },
+    "RDKit Import": {
+      "status": "passed",
+      "output": "RDKit not required for this server\n",
+      "error": ""
+    },
+    "MCP Registration": {
+      "status": "passed",
+      "output": "Checking MCP server health...\n\nrosetta-kic-mcp: /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp/env/bin/python /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp/src/server.py - \u2713 Connected\n",
+      "error": ""
+    },
+    "FastMCP Dev Startup": {
+      "status": "failed",
+      "output": "",
+      "error": "[12/31/25 15:30:40] ERROR    File not found:                    filesystem.py:68\n                             /home/xux/Desktop/CycPepMCP/CycPep                 \n                             MCP/tool-mcps/rosetta_kic_mcp/src/                 \n                             src/server.py                                      \n"
+    },
+    "Sync Tools": {
+      "status": "passed",
+      "output": "{\n  \"status\": \"success\",\n  \"valid\": true,\n  \"sequence\": \"GRGDSP\",\n  \"length\": 6\n}",
+      "error": ""
+    },
+    "Job Submission": {
+      "status": "passed",
+      "output": "{\n  \"status\": \"submitted\",\n  \"job_id\": \"34bd13c4\",\n  \"message\": \"Job submitted. Use get_job_status('34bd13c4') to check progress.\",\n  \"script\": \"structure_prediction.py\",\n  \"job_name\": \"test_job\"\n}",
+      "error": "2025-12-31 15:30:40.661 | INFO     | jobs.manager:__init__:44 - JobManager initialized with jobs_dir: /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp/jobs\n2025-12-31 15:30:40.661 | INFO     | jobs.manager:__init__:45 - Project root: /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp\n2025-12-31 15:30:40.661 | INFO     | jobs.manager:__init__:46 - Scripts directory: /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp/scripts\n2025-12-31 15:30:40.661 | DEBUG    | jobs.store:save_metadata:46 - Saved metadata for job 34bd13c4\n2025-12-31 15:30:40.662 | INFO     | jobs.manager:submit_job:95 - Submitted job 34bd13c4 (structure_prediction.py) with args: {'input': 'GRGDSP', 'nstruct': 1, 'runtime': 60}\n"
+    },
+    "Structure Validation": {
+      "status": "failed",
+      "output": "{\n  \"status\": \"error\",\n  \"error\": \"File not found: examples/data/demo_peptide.pdb\",\n  \"error_type\": \"validation_error\"\n}",
+      "error": ""
+    }
+  },
+  "issues": [
+    "Server Startup: Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'src'\n",
+    "FastMCP Dev Startup: [12/31/25 15:30:40] ERROR    File not found:                    filesystem.py:68\n                             /home/xux/Desktop/CycPepMCP/CycPep                 \n                             MCP/tool-mcps/rosetta_kic_mcp/src/                 \n                             src/server.py                                      \n",
+    "Structure Validation: "
+  ],
+  "summary": {
+    "total_tests": 7,
+    "passed": 4,
+    "failed": 3,
+    "errors": 0,
+    "pass_rate": "57.1%",
+    "overall_status": "FAIL"
+  }
+}

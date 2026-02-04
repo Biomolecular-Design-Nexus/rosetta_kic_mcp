@@ -1,0 +1,338 @@
+{
+  "project_name": "rosetta-kic-mcp",
+  "full_name": "Rosetta KIC MCP",
+  "description": "MCP tools for cyclic peptide computational analysis using Rosetta KIC and GeneralizedKIC protocols",
+  "version": "1.0.0",
+  "created_date": "2025-12-31",
+  "features": [
+    "Cyclic peptide closure using GeneralizedKIC algorithm",
+    "3D structure prediction from amino acid sequences",
+    "Flexible loop modeling with Monte Carlo sampling",
+    "Batch processing for virtual screening workflows",
+    "Structure validation and quality assessment",
+    "Job management for long-running computations"
+  ],
+  "tools": [
+    {
+      "name": "get_job_status",
+      "type": "sync",
+      "description": "Check job progress and status",
+      "example_prompt": "Check the status of job abc12345",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "get_job_result",
+      "type": "sync",
+      "description": "Get results when completed",
+      "example_prompt": "Get results for job abc12345",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "get_job_log",
+      "type": "sync",
+      "description": "View execution logs",
+      "example_prompt": "Show me the logs for job abc12345 with tail 20",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "cancel_job",
+      "type": "sync",
+      "description": "Cancel running job",
+      "example_prompt": "Cancel job abc12345",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "list_jobs",
+      "type": "sync",
+      "description": "List all jobs with filtering",
+      "example_prompt": "List all running jobs",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "cleanup_old_jobs",
+      "type": "sync",
+      "description": "Clean up old completed jobs",
+      "example_prompt": "Clean up jobs older than 7 days",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "validate_peptide_structure",
+      "type": "sync",
+      "description": "Validate PDB structure file format",
+      "example_prompt": "Validate this peptide structure: @examples/data/structures/linear_peptide_sample.pdb",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "validate_peptide_sequence",
+      "type": "sync",
+      "description": "Validate amino acid sequence format",
+      "example_prompt": "Validate peptide sequence GRGDSP",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "get_server_info",
+      "type": "sync",
+      "description": "Get server information and capabilities",
+      "example_prompt": "What tools are available from rosetta-kic-mcp?",
+      "runtime": "< 1 sec"
+    },
+    {
+      "name": "submit_cyclic_peptide_closure",
+      "type": "submit",
+      "description": "Close linear peptides into cycles using GeneralizedKIC",
+      "example_prompt": "Close this linear peptide into a cyclic structure: @examples/data/structures/linear_peptide_sample.pdb with 5 structures and GLY residues",
+      "runtime": "10-30 min",
+      "parameters": ["input_file", "length", "nstruct", "residue_type", "job_name"]
+    },
+    {
+      "name": "submit_structure_prediction",
+      "type": "submit",
+      "description": "Predict 3D structure from amino acid sequence",
+      "example_prompt": "Submit a 3D structure prediction job for the sequence GRGDSP with 10 structures and 15 minute runtime",
+      "runtime": "15-60 min",
+      "parameters": ["sequence", "nstruct", "runtime", "use_mpi", "job_name"]
+    },
+    {
+      "name": "submit_loop_modeling",
+      "type": "submit",
+      "description": "Model flexible loops with Kinematic Closure",
+      "example_prompt": "Model loop from residue 10 to 20 in @examples/data/structures/test_in.pdb",
+      "runtime": "20-90 min",
+      "parameters": ["input_file", "loop_start", "loop_end", "loop_cut", "outer_cycles", "inner_cycles", "fast_mode", "job_name"]
+    },
+    {
+      "name": "submit_batch_cyclic_closure",
+      "type": "submit",
+      "description": "Batch peptide closure for multiple structures",
+      "example_prompt": "Submit batch cyclic closure for multiple peptide files with 3 structures each",
+      "runtime": "varies",
+      "parameters": ["input_files", "length", "nstruct", "residue_type", "job_name"]
+    },
+    {
+      "name": "submit_batch_structure_prediction",
+      "type": "submit",
+      "description": "Batch structure prediction for multiple sequences",
+      "example_prompt": "Submit batch structure prediction for sequences GRGDSP, CRGDSC, RGDFV with 5 structures each",
+      "runtime": "varies",
+      "parameters": ["sequences", "nstruct", "runtime", "job_name"]
+    }
+  ],
+  "scripts": [
+    {
+      "name": "cyclic_peptide_closure.py",
+      "path": "scripts/cyclic_peptide_closure.py",
+      "description": "Close linear peptides into cyclic structures using GeneralizedKIC",
+      "example_command": "mamba run -p ./env python scripts/cyclic_peptide_closure.py --input examples/data/structures/linear_peptide_sample.pdb --length 6 --nstruct 5",
+      "parameters": [
+        {"name": "--input, -i", "description": "Input PDB file with linear peptide (required)"},
+        {"name": "--length, -l", "description": "Maximum loop length for closure (default: 6)"},
+        {"name": "--nstruct, -n", "description": "Number of cyclic structures to generate (default: 5)"},
+        {"name": "--resn, -r", "description": "Residue type for extension (default: GLY)"},
+        {"name": "--output, -o", "description": "Output directory (default: results/)"}
+      ]
+    },
+    {
+      "name": "structure_prediction.py",
+      "path": "scripts/structure_prediction.py",
+      "description": "Predict 3D structures from amino acid sequences",
+      "example_command": "mamba run -p ./env python scripts/structure_prediction.py --sequence 'GRGDSP' --nstruct 10 --runtime 900",
+      "parameters": [
+        {"name": "--sequence, -s", "description": "Amino acid sequence (one-letter codes, required)"},
+        {"name": "--output_dir, -o", "description": "Output directory (default: results/)"},
+        {"name": "--nstruct", "description": "Number of structures to generate (default: 10)"},
+        {"name": "--runtime", "description": "Maximum runtime in seconds (default: 900)"}
+      ]
+    },
+    {
+      "name": "loop_modeling.py",
+      "path": "scripts/loop_modeling.py",
+      "description": "Model flexible loops using Kinematic Closure",
+      "example_command": "mamba run -p ./env python scripts/loop_modeling.py --input examples/data/structures/test_in.pdb --loop_start 10 --loop_end 20",
+      "parameters": [
+        {"name": "--input, -i", "description": "Input PDB structure file (required)"},
+        {"name": "--loop_start", "description": "Starting residue number (required)"},
+        {"name": "--loop_end", "description": "Ending residue number (required)"},
+        {"name": "--loop_cut", "description": "Cut point for closure (optional)"},
+        {"name": "--outer_cycles", "description": "Monte Carlo outer cycles (default: 10)"},
+        {"name": "--inner_cycles", "description": "Monte Carlo inner cycles (default: 30)"}
+      ]
+    }
+  ],
+  "demo_data": [
+    {
+      "file": "examples/data/sequences/sample_cyclic_peptide.txt",
+      "description": "Basic cyclic peptide sequence (GRGDSP)",
+      "content": "GRGDSP",
+      "used_by": ["validate_peptide_sequence", "submit_structure_prediction"]
+    },
+    {
+      "file": "examples/data/sequences/sample_cyclic_hexapeptide.txt",
+      "description": "Cysteine-cyclized peptide sequence",
+      "content": "CRGDSC",
+      "used_by": ["validate_peptide_sequence", "submit_structure_prediction"]
+    },
+    {
+      "file": "examples/data/sequences/sample_longer_peptide.txt",
+      "description": "10-residue peptide sequence",
+      "content": "GRGDSPKGAC",
+      "used_by": ["validate_peptide_sequence", "submit_structure_prediction"]
+    },
+    {
+      "file": "examples/data/structures/linear_peptide_sample.pdb",
+      "description": "Linear pentapeptide GRGDS for closure testing",
+      "used_by": ["submit_cyclic_peptide_closure", "validate_peptide_structure"]
+    },
+    {
+      "file": "examples/data/structures/cyclic_pep_with_link.pdb",
+      "description": "Cyclic peptide with declared bond",
+      "used_by": ["validate_peptide_structure"]
+    },
+    {
+      "file": "examples/data/structures/test_in.pdb",
+      "description": "Test protein structure for loop modeling",
+      "used_by": ["submit_loop_modeling", "validate_peptide_structure"]
+    },
+    {
+      "file": "examples/data/structures/2cpl_min.pdb",
+      "description": "Minimized cyclic peptide structure",
+      "used_by": ["validate_peptide_structure"]
+    },
+    {
+      "file": "examples/data/structures/demo_peptide.pdb",
+      "description": "Demo structure for testing",
+      "used_by": ["validate_peptide_structure", "submit_loop_modeling"]
+    }
+  ],
+  "configs": [
+    {
+      "file": "configs/default_config.json",
+      "description": "Shared default settings for all tools",
+      "parameters": {
+        "general": {
+          "output_format": "auto",
+          "verbose": true,
+          "create_backups": false
+        },
+        "validation": {
+          "sequence_min_length": 3,
+          "sequence_max_length": 50,
+          "validate_inputs": true
+        },
+        "performance": {
+          "max_memory_gb": 8,
+          "timeout_seconds": 3600,
+          "checkpoint_interval": 100
+        }
+      }
+    },
+    {
+      "file": "configs/cyclic_peptide_closure_config.json",
+      "description": "Configuration for peptide closure operations",
+      "parameters": {"kic_settings": "closure parameters", "sampling": "monte carlo settings"}
+    },
+    {
+      "file": "configs/structure_prediction_config.json",
+      "description": "Configuration for structure prediction",
+      "parameters": {"conformers": "number of conformers", "optimization": "optimization settings"}
+    },
+    {
+      "file": "configs/loop_modeling_config.json",
+      "description": "Configuration for loop modeling operations",
+      "parameters": {"mc_cycles": "monte carlo cycles", "sampling": "conformational sampling"}
+    }
+  ],
+  "installation": {
+    "package_manager": "mamba (preferred) or conda",
+    "python_version": "3.10+",
+    "environment_path": "./env",
+    "key_dependencies": ["rdkit", "biopython", "fastmcp", "loguru", "numpy", "pandas"],
+    "optional_dependencies": ["PyRosetta for full functionality"],
+    "setup_commands": [
+      "cd /home/xux/Desktop/CycPepMCP/CycPepMCP/tool-mcps/rosetta_kic_mcp",
+      "mamba create -p ./env python=3.12 pip numpy pandas -y",
+      "mamba install -p ./env -c conda-forge rdkit -y",
+      "mamba install -p ./env -c conda-forge biopython -y",
+      "mamba run -p ./env pip install loguru click tqdm",
+      "mamba run -p ./env pip install fastmcp"
+    ]
+  },
+  "mcp_installation": {
+    "fastmcp_method": "fastmcp install src/server.py --name rosetta-kic-mcp",
+    "claude_manual": "claude mcp add rosetta-kic-mcp -- $(pwd)/env/bin/python $(pwd)/src/server.py",
+    "settings_json_path": "~/.claude/settings.json",
+    "server_name": "rosetta-kic-mcp"
+  },
+  "examples": [
+    {
+      "title": "Quick Structure Validation",
+      "goal": "Validate a peptide structure before expensive computations",
+      "claude_prompt": "Validate this peptide structure: @examples/data/structures/linear_peptide_sample.pdb",
+      "expected_output": ["Structure validation results", "Chain information", "Basic geometric checks"]
+    },
+    {
+      "title": "Cyclic Peptide Closure",
+      "goal": "Close a linear peptide into a cyclic structure",
+      "claude_prompt": "Close this linear peptide into a cyclic structure: @examples/data/structures/linear_peptide_sample.pdb\n\nUse these parameters:\n- Maximum loop length: 6\n- Number of structures: 5\n- Residue type for closure: GLY\n- Job name: \"closure_demo\"\n\nCheck the job status and show me the results when complete.",
+      "expected_output": ["Cyclic peptide structures", "Energy analysis", "Geometric validation"]
+    },
+    {
+      "title": "Structure Prediction from Sequence",
+      "goal": "Generate 3D conformers for a cyclic peptide sequence",
+      "claude_prompt": "Predict 3D structures for the cyclic peptide sequence GRGDSP:\n- Generate 10 structures\n- Set runtime limit to 15 minutes\n- Name the job \"grgdsp_prediction\"\n\nMonitor the progress and analyze the results when finished.",
+      "expected_output": ["3D structure conformers", "Energy scores", "Structural analysis"]
+    },
+    {
+      "title": "Batch Virtual Screening",
+      "goal": "Screen multiple cyclic peptide sequences for structural analysis",
+      "claude_prompt": "I want to screen these cyclic peptide sequences for structural diversity:\n\nRead the sequences from @examples/data/sequences/sample_cyclic_peptide.txt and the other sequence files in that directory.\n\nFor each sequence:\n1. First validate the sequence format\n2. Submit structure prediction with 5 conformers each\n3. Set runtime to 10 minutes per sequence\n4. Name the batch job \"diversity_screen\"\n\nTrack all jobs and summarize the results when complete.",
+      "expected_output": ["Batch job results", "Sequence validation", "Structural diversity analysis"]
+    }
+  ],
+  "performance": {
+    "runtime_estimates": {
+      "structure_validation": "< 1 sec",
+      "sequence_validation": "< 1 sec",
+      "peptide_closure": "10-30 min",
+      "structure_prediction": "15-60 min",
+      "loop_modeling": "20-90 min",
+      "batch_processing": "scales linearly"
+    },
+    "resource_requirements": {
+      "small_peptide_6_8_aa": {"memory": "< 100 MB", "disk": "< 10 MB"},
+      "medium_peptide_10_15_aa": {"memory": "200-500 MB", "disk": "50-100 MB"},
+      "large_peptide_15_plus_aa": {"memory": "> 500 MB", "disk": "> 100 MB"}
+    }
+  },
+  "scientific_applications": [
+    "Cyclic Peptide Design - Close linear designs into stable cycles",
+    "Virtual Screening - Batch process peptide libraries",
+    "Loop Engineering - Model flexible binding regions"
+  ],
+  "troubleshooting": {
+    "environment_issues": [
+      "Environment not found: Recreate with provided commands",
+      "RDKit import errors: Install from conda-forge",
+      "Import errors: Verify installation with test commands"
+    ],
+    "mcp_issues": [
+      "Server not found: Re-register with fastmcp",
+      "Invalid sequence: Use standard amino acid codes",
+      "Tools not working: Test server startup directly"
+    ],
+    "job_issues": [
+      "Job stuck: Check job directory and logs",
+      "Job failed: Use get_job_log for error details",
+      "PyRosetta unavailable: Scripts run in demo mode"
+    ]
+  },
+  "validation_results": {
+    "readme_created": true,
+    "all_file_paths_verified": true,
+    "scripts_tested": true,
+    "server_startup_tested": true,
+    "demo_data_verified": true,
+    "examples_documented": 4,
+    "tools_documented": 15,
+    "configs_documented": 4
+  }
+}

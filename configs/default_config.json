@@ -1,0 +1,47 @@
+{
+  "_description": "Default configuration shared across all cyclic peptide scripts",
+  "_version": "1.0.0",
+
+  "general": {
+    "output_format": "auto",
+    "verbose": true,
+    "create_backups": false,
+    "overwrite_existing": false
+  },
+
+  "validation": {
+    "sequence_min_length": 3,
+    "sequence_max_length": 50,
+    "validate_inputs": true,
+    "strict_validation": false
+  },
+
+  "performance": {
+    "parallel_execution": false,
+    "max_memory_gb": 8,
+    "timeout_seconds": 3600,
+    "checkpoint_interval": 100
+  },
+
+  "paths": {
+    "rosetta_database": "auto",
+    "temp_directory": "tmp",
+    "output_directory": "results",
+    "log_directory": "logs"
+  },
+
+  "logging": {
+    "level": "INFO",
+    "log_to_file": true,
+    "log_to_console": true,
+    "max_log_size_mb": 50,
+    "log_rotation": true
+  },
+
+  "demo_mode": {
+    "always_use_demo": false,
+    "demo_when_missing_deps": true,
+    "realistic_outputs": true,
+    "include_metadata": true
+  }
+}

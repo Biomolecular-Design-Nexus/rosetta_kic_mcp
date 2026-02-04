@@ -1,0 +1,53 @@
+{
+  "_description": "Configuration for KIC loop modeling",
+  "_source": "Extracted from examples/use_case_3_kic_loop_modeling.py",
+
+  "outer_cycles": 10,
+  "inner_cycles": 30,
+  "init_temp": 2.0,
+  "final_temp": 1.0,
+
+  "kic_settings": {
+    "max_kic_build_attempts": 10000,
+    "idealize_loop_first": true,
+    "set_pivots_automatically": true
+  },
+
+  "scoring": {
+    "centroid_function": "cen_std",
+    "fullatom_function": "standard",
+    "tolerance": 0.001,
+    "minimization_type": "linmin"
+  },
+
+  "monte_carlo": {
+    "temperature_schedule": "exponential",
+    "boltzmann_acceptance": true,
+    "recover_low_energy": true
+  },
+
+  "refinement": {
+    "convert_to_fullatom": true,
+    "recover_sidechains": true,
+    "pack_rotamers": true,
+    "high_resolution_refinement": true
+  },
+
+  "output": {
+    "save_final_structure": true,
+    "calculate_rmsd": true,
+    "include_trajectory": true,
+    "include_analysis": true,
+    "display_pymol": false
+  },
+
+  "demo_mode": {
+    "enabled": true,
+    "initial_score_range": [150.0, 200.0],
+    "final_score_range": [-30.0, -20.0],
+    "rmsd_evolution": true,
+    "temperature_annealing": true,
+    "processing_delay": 0.2,
+    "progress_reporting": 5
+  }
+}
