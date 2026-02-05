@@ -349,9 +349,15 @@ def main():
     if args.xml:
         extra_kwargs["xml_file"] = args.xml
 
+    # Handle comma-separated input files (from MCP job manager)
+    input_files = []
+    for item in args.input:
+        input_files.extend(item.split(","))
+    input_files = [f.strip() for f in input_files if f.strip()]
+
     try:
         result = run_interface_metrics(
-            input_files=args.input,
+            input_files=input_files,
             output_file=args.output,
             config=config,
             **extra_kwargs,

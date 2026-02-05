@@ -334,6 +334,218 @@ def submit_loop_modeling(
         return standardize_error_response(str(e))
 
 
+@mcp.tool()
+def submit_cycpep_fast_relax(
+    input_file: str,
+    rounds: int = 4,
+    xml: Optional[str] = None,
+    job_name: Optional[str] = None
+) -> dict:
+    """
+    Submit a cyclic peptide FastRelax job with PeptideCyclizeMover.
+
+    Relaxes cyclic peptide-target complexes using iterative FastRelax.
+    Applies PeptideCyclizeMover before and after FastRelax to maintain the
+    terminal peptide bond. Peptide chain is fully movable; target interface
+    sidechains can repack; non-interface target residues are frozen.
+
+    Args:
+        input_file: Path to PDB file (cyclic peptide-target complex)
+        rounds: Number of FastRelax rounds (default: 4)
+        xml: Optional path to custom RosettaScripts XML file
+        job_name: Optional name for the job (for easier tracking)
+
+    Returns:
+        Dictionary with job_id for tracking. Use:
+        - get_job_status(job_id) to check progress
+        - get_job_result(job_id) to get results when completed
+        - get_job_log(job_id) to see execution logs
+    """
+    try:
+        # Validate input file
+        validation = validate_input_file(input_file)
+        if not validation["valid"]:
+            return standardize_error_response(validation["error"], "validation_error")
+
+        # Prepare arguments
+        args = {
+            "input": validation["path"],
+            "rounds": rounds,
+        }
+
+        if xml is not None:
+            args["xml"] = xml
+
+        # Submit job
+        return job_manager.submit_job(
+            script_name="cycpep_fast_relax.py",
+            args=args,
+            job_name=job_name or f"fast_relax_{rounds}rounds"
+        )
+
+    except Exception as e:
+        logger.error(f"Error submitting cycpep fast relax job: {e}")
+        return standardize_error_response(str(e))
+
+
+@mcp.tool()
+def submit_interface_metrics(
+    input_files: List[str],
+    peptide_chain: str = "A",
+    ddg_threshold: float = -40.0,
+    sap_threshold: float = 35.0,
+    cms_threshold: float = 300.0,
+    job_name: Optional[str] = None
+) -> dict:
+    """
+    Submit an interface metrics job for cyclic peptide-target complexes.
+
+    Computes ddG (binding energy), SAP (spatial aggregation propensity),
+    and CMS (contact molecular surface) for one or more complexes.
+    Applies PeptideCyclizeMover and Cartesian minimization before computing
+    metrics.
+
+    Args:
+        input_files: List of paths to PDB files (cyclic peptide-target complexes)
+        peptide_chain: Peptide chain ID in the PDB (default: "A")
+        ddg_threshold: ddG filter threshold in REU (default: -40.0, more negative = better)
+        sap_threshold: SAP filter threshold (default: 35.0, lower = better solubility)
+        cms_threshold: CMS filter threshold in Å² (default: 300.0, higher = more contact)
+        job_name: Optional name for the job (for easier tracking)
+
+    Returns:
+        Dictionary with job_id for tracking. Use:
+        - get_job_status(job_id) to check progress
+        - get_job_result(job_id) to get results when completed
+        - get_job_log(job_id) to see execution logs
+    """
+    try:
+        if not input_files:
+            return standardize_error_response("No input files provided", "validation_error")
+
+        # Validate all input files
+        validated_files = []
+        for file_path in input_files:
+            validation = validate_input_file(file_path)
+            if not validation["valid"]:
+                return standardize_error_response(
+                    f"Invalid file {file_path}: {validation['error']}",
+                    "validation_error"
+                )
+            validated_files.append(validation["path"])
+
+        # The script accepts comma-separated files via --input
+        # The job manager passes --input <value> as a single string
+        args = {
+            "input": ",".join(validated_files),
+            "peptide_chain": peptide_chain,
+            "ddg_threshold": ddg_threshold,
+            "sap_threshold": sap_threshold,
+            "cms_threshold": cms_threshold,
+        }
+
+        # Submit job
+        return job_manager.submit_job(
+            script_name="interface_metrics.py",
+            args=args,
+            job_name=job_name or f"interface_metrics_{len(validated_files)}_files"
+        )
+
+    except Exception as e:
+        logger.error(f"Error submitting interface metrics job: {e}")
+        return standardize_error_response(str(e))
+
+
+@mcp.tool()
+def submit_rmsd_benchmark(
+    input_file: Optional[str] = None,
+    native_file: Optional[str] = None,
+    input_dir: Optional[str] = None,
+    native_dir: Optional[str] = None,
+    rmsd_cutoff: float = 2.0,
+    job_name: Optional[str] = None
+) -> dict:
+    """
+    Submit an RMSD benchmark job for cyclic peptide structures.
+
+    Computes backbone heavy-atom RMSD between predicted and reference
+    structures. Applies PeptideCyclizeMover then computes superimposed
+    backbone RMSD (N, CA, C, O atoms).
+
+    Supports two modes:
+    - Single pair: provide input_file and native_file
+    - Batch directory: provide input_dir and native_dir (matched by filename)
+
+    Args:
+        input_file: Path to predicted PDB file (single mode)
+        native_file: Path to native/reference PDB file (single mode)
+        input_dir: Directory of predicted PDB files (batch mode)
+        native_dir: Directory of native PDB files (batch mode)
+        rmsd_cutoff: RMSD pass/fail cutoff in Angstroms (default: 2.0)
+        job_name: Optional name for the job (for easier tracking)
+
+    Returns:
+        Dictionary with job_id for tracking. Use:
+        - get_job_status(job_id) to check progress
+        - get_job_result(job_id) to get results when completed
+        - get_job_log(job_id) to see execution logs
+    """
+    try:
+        # Validate that at least one mode is specified
+        has_single = input_file is not None and native_file is not None
+        has_batch = input_dir is not None and native_dir is not None
+
+        if not has_single and not has_batch:
+            return standardize_error_response(
+                "Provide either (input_file + native_file) or (input_dir + native_dir)",
+                "validation_error"
+            )
+
+        args = {
+            "rmsd_cutoff": rmsd_cutoff,
+        }
+
+        if has_single:
+            # Validate single files
+            validation_input = validate_input_file(input_file)
+            if not validation_input["valid"]:
+                return standardize_error_response(validation_input["error"], "validation_error")
+
+            validation_native = validate_input_file(native_file)
+            if not validation_native["valid"]:
+                return standardize_error_response(
+                    f"Native file error: {validation_native['error']}", "validation_error"
+                )
+
+            args["input"] = validation_input["path"]
+            args["native"] = validation_native["path"]
+
+        if has_batch:
+            # Validate directories exist
+            from pathlib import Path as _Path
+            if not _Path(input_dir).is_dir():
+                return standardize_error_response(
+                    f"Input directory not found: {input_dir}", "validation_error"
+                )
+            if not _Path(native_dir).is_dir():
+                return standardize_error_response(
+                    f"Native directory not found: {native_dir}", "validation_error"
+                )
+            args["input_dir"] = input_dir
+            args["native_dir"] = native_dir
+
+        # Submit job
+        return job_manager.submit_job(
+            script_name="rmsd_benchmark.py",
+            args=args,
+            job_name=job_name or "rmsd_benchmark"
+        )
+
+    except Exception as e:
+        logger.error(f"Error submitting RMSD benchmark job: {e}")
+        return standardize_error_response(str(e))
+
+
 # ==============================================================================
 # Batch Processing Tools
 # ==============================================================================
@@ -630,7 +842,9 @@ def get_server_info() -> dict:
                 ],
                 "submit_tools": [
                     "submit_cyclic_peptide_closure", "submit_structure_prediction",
-                    "submit_loop_modeling", "submit_batch_cyclic_closure",
+                    "submit_loop_modeling", "submit_cycpep_fast_relax",
+                    "submit_interface_metrics", "submit_rmsd_benchmark",
+                    "submit_batch_cyclic_closure",
                     "submit_batch_structure_prediction"
                 ],
                 "sync_tools": [
@@ -642,6 +856,9 @@ def get_server_info() -> dict:
                 "cyclic_peptide_closure": "10-30 minutes",
                 "structure_prediction": "15-60 minutes",
                 "loop_modeling": "20-90 minutes",
+                "cycpep_fast_relax": "5-20 minutes",
+                "interface_metrics": "5-30 minutes",
+                "rmsd_benchmark": "1-10 minutes",
                 "validation": "< 1 second"
             }
         })
